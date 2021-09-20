@@ -108,7 +108,9 @@
         $('[name=barangay]').empty()
         $('[name=municipality]').prop('readonly', true)
         $('[name=municipality]').empty()
-        
+        $('[name=province]').append(`
+            <option value="">Choose Province</option>
+        `)
         
         if(code != '130000000'){
             $.ajax({
@@ -116,9 +118,6 @@
                 url: "https://psgc.gitlab.io/api/regions/"+code+"/provinces",
                 dataType: "json",
                 success: function (response) {
-                    $('[name=province]').append(`
-                        <option value="">Choose Province</option>
-                    `)
                     response.forEach(el=>{
                         if(el.code == value){
                             builder = `
@@ -162,6 +161,9 @@
         $('[name=municipality]').empty()
         $('[name=barangay]').prop('readonly', true)
         $('[name=barangay]').empty()
+        $('[name=municipality]').append(`
+            <option value="">Choose Municipality</option>
+        `)
 
         if(region != '130000000'){
             $.ajax({
@@ -169,9 +171,6 @@
                 url: "https://psgc.gitlab.io/api/provinces/"+code+"/cities-municipalities",
                 dataType: "json",
                 success: function (response) {
-                    $('[name=municipality]').append(`
-                        <option value="">Choose Municipality</option>
-                    `)
                     response.forEach(el=>{
                         if(el.code == value){
                             builder = `
@@ -348,6 +347,10 @@
         $('#address').text('')
         setRegion()
         $('#region').val('')
+        $('#province').val('').empty()
+        $('#municipality').val('').empty()
+        $('#barangay').val('').empty()
+        $('#house_street').val('').empty()
     })
    </script>
 </body>
