@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Address AutoComplete</title>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css' integrity='sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==' crossorigin='anonymous'/>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css' integrity='sha512-yI2XOLiLTQtFA9IYePU0Q1Wt0Mjm/UkmlKMy4TU4oNXEws0LybqbifbO8t9rEIU65qdmtomQEQ+b3XfLfCzNaw==' crossorigin='anonymous'/>
 </head>
 <body class="bg-secondary">
 
@@ -27,21 +28,19 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label for="region">Region</label>
-                            <select name="region" id="region" class="custom-select">
-                                <option value="">Choose Region</option>
-                            </select>
+                            <select name="region" id="region"></select>
                         </div>
                         <div class="form-group">
                             <label for="province">Province</label>
-                            <select readonly="true" name="province" id="province" class="custom-select"></select>
+                            <select readonly="true" name="province" id="province"></select>
                         </div>
                         <div class="form-group">
                             <label for="municipality">Municipality</label>
-                            <select readonly="true" name="municipality" id="municipality" class="custom-select"></select>
+                            <select readonly="true" name="municipality" id="municipality"></select>
                         </div>
                         <div class="form-group">
                             <label for="barangay">Barangay</label>
-                            <select readonly="true" name="barangay" id="barangay" class="custom-select"></select>
+                            <select readonly="true" name="barangay" id="barangay"></select>
                         </div>
                         <div class="form-group">
                             <label for="house_street">House No. and Street</label>
@@ -60,13 +59,15 @@
     
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js' integrity='sha512-3P8rXCuGJdNZOnUx/03c1jOTnMn3rP63nBip5gOP2qmUh5YAdVAvFZ1E+QLZZbC1rtMrQb+mah3AfYW11RUrWA==' crossorigin='anonymous'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/js/bootstrap.bundle.min.js' integrity='sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==' crossorigin='anonymous'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.full.min.js' integrity='sha512-orfBhUXN61JpjXpFeA1NkJ1c2IOtytP4aMxpKqpE2ToIEn5wz4+BiM8xLXEJVxCVubpQOQhFbQWdbF3qLkYYcg==' crossorigin='anonymous'></script>
 
     <!-- Custom Scripts -->
     <script>
-    let region = localStorage.getItem('region') || null
-    let province = localStorage.getItem('province') || null
+    // Get Data if any
+    let region = localStorage.getItem('region')             || null
+    let province = localStorage.getItem('province')         || null
     let municipality = localStorage.getItem('municipality') || null
-    let barangay = localStorage.getItem('barangay') || null
+    let barangay = localStorage.getItem('barangay')         || null
     let house_street = localStorage.getItem('house_street') || null
     let full_address = localStorage.getItem('full_address') || null
 
@@ -78,6 +79,9 @@
             url: "https://psgc.gitlab.io/api/regions",
             dataType: "json",
             success: function (response) {
+                $('[name=region]').append(`
+                    <option value="">Choose Region</option>
+                `)
                 response.forEach(el=>{
                     // Create element builder
                     let builder
@@ -246,6 +250,13 @@
     }
 
     $(document).ready(()=>{
+
+        $('[name=region]').select2({width: '100%', placeholder: {id: '', text: 'Select Region'}})
+        $('[name=province]').select2({width: '100%', placeholder: {id: '', text: 'Select Region First'}})
+        $('[name=municipality]').select2({width: '100%', placeholder: {id: '', text: 'Select Province First'}})
+        $('[name=barangay]').select2({width: '100%', placeholder: {id: '', text: 'Select Municipality First'}})
+
+
         // Get Regions First
         setRegion()
 
@@ -282,17 +293,17 @@
         let barangay_val = $('#barangay').val()
         let house_street_val = $('#house_street').val()
 
-        // Get SELECTED text
-        let barangay_text = $('[name=barangay] option:selected').text()
-        let municipality_text = $('[name=municipality] option:selected').text()
-        let province_text = $('[name=province] option:selected').text()
-        let region_text = $('[name=region] option:selected').text().split(' (')[0]
+        // Get SELECTED text (using Select2)
+        let barangay_text = $('[name=barangay]').select2('data')[0].text
+        let municipality_text = $('[name=municipality]').select2('data')[0].text
+        let province_text = $('[name=province]').select2('data')[0].text
+        let region_text = $('[name=region]').select2('data')[0].text.split(' (')[0]
         let full_address_text = `${house_street_val}, ${barangay_text}, ${municipality_text}, ${province_text}, ${region_text}`
 
 
         // Invalidate incomplete address
         if(
-            region_val            == '' ||
+            region_val        == '' ||
             province_val      == '' ||
             municipality_val  == '' ||
             barangay_val      == '' ||
@@ -316,6 +327,15 @@
             barangay = localStorage.getItem('barangay')
             house_street = localStorage.getItem('house_street')
             full_address = localStorage.getItem('full_address')
+
+            console.log({
+                region,
+                province,
+                municipality,
+                barangay,
+                house_street,
+                full_address
+            })
             
             // Set address dynamically
             setAddress()
